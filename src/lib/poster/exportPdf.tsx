@@ -177,7 +177,7 @@ function renderRacePosterHtml(race: Race): string {
       <div class="poster-race-line"><span>${ordinal(race.raceNumber)} RACE</span><span class="poster-bracket">(${race.raceNumber})</span><span>${race.distanceMetres}M</span></div>
     </header>
     <main class="poster-runners" style="top:${layout.runnerTopMm}mm">${runners}</main>
-    <footer class="poster-footer"><div>PRINTED BY</div><strong>CHANKA NEWS</strong><a href="https://www.bracketdex.com/">POWERED BY BRACKETDEX</a></footer>
+    <footer class="poster-footer"><div>PRINTED BY</div><strong>CHANKA NEWS</strong></footer>
   </section>`;
 }
 

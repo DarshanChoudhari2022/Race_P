@@ -7,16 +7,12 @@ export interface RacePosterProps {
   race: Race;
   footerTop?: string;
   footerBottom?: string;
-  poweredBy?: string;
-  poweredByUrl?: string;
 }
 
 export function RacePoster({
   race,
   footerTop = "PRINTED BY",
   footerBottom = "CHANKA NEWS",
-  poweredBy = "POWERED BY BRACKETDEX",
-  poweredByUrl = "https://www.bracketdex.com/",
 }: RacePosterProps) {
   const layout = calculatePosterLayout(race.runners.length);
 
@@ -68,7 +64,6 @@ export function RacePoster({
       <footer className="poster-footer">
         <div>{footerTop}</div>
         <strong>{footerBottom}</strong>
-        <a href={poweredByUrl}>{poweredBy}</a>
       </footer>
     </section>
   );
