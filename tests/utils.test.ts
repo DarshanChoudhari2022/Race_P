@@ -23,14 +23,14 @@ describe("race utility formatting", () => {
 
 describe("poster layout", () => {
   it("sizes common runner counts", () => {
-    expect(calculatePosterLayout(7).horseFontPt).toBe(48);
-    expect(calculatePosterLayout(8).horseFontPt).toBe(44);
-    expect(calculatePosterLayout(12).horseFontPt).toBe(36);
-    expect(calculatePosterLayout(14).horseFontPt).toBe(32);
+    expect(calculatePosterLayout(7).horseFontPt).toBe(45);
+    expect(calculatePosterLayout(8).horseFontPt).toBe(45);
+    expect(calculatePosterLayout(12).horseFontPt).toBe(45);
+    expect(calculatePosterLayout(14).horseFontPt).toBe(40);
   });
 
   it("reduces long horse names without ellipsis", () => {
-    expect(fitHorseNameFontSize("QUEEN OF BEAUTIES", 48)).toBe(48);
-    expect(fitHorseNameFontSize("SKY FULL OF STARS FOREVER", 48)).toBeLessThan(48);
+    expect(fitHorseNameFontSize("QUEEN OF BEAUTIES", 45)).toBe(45);
+    expect(fitHorseNameFontSize("SKY FULL OF STARS FOREVER", 45)).toBeLessThan(45);
   });
 });

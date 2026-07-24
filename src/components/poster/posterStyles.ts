@@ -36,19 +36,21 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   left: 0;
   width: 100%;
   text-align: center;
-  color: #111111;
+  color: #121315;
 }
 .poster-date {
-  font-size: 16pt;
+  font-size: 14.25pt;
   line-height: 1;
   font-weight: 800;
+  color: #121315;
 }
 .poster-venue {
   margin-top: 3mm;
-  font-size: 25pt;
+  font-size: 25.5pt;
   line-height: 1;
   font-weight: 800;
   letter-spacing: 0;
+  color: #121315;
 }
 .poster-race-line {
   margin-top: 8mm;
@@ -56,12 +58,13 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   justify-content: center;
   align-items: center;
   gap: 0;
-  font-size: 28pt;
+  font-size: 25.5pt;
   line-height: 1;
   font-weight: 800;
+  color: #121315;
 }
 .poster-bracket {
-  font-size: 45pt;
+  font-size: 39pt;
   line-height: .8;
   padding: 0 1mm;
 }
@@ -83,12 +86,12 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   overflow: visible;
 }
 .runner-number {
-  color: #F20D0D;
+  color: #ff0000;
   font-weight: 800;
   line-height: .9;
 }
 .runner-name {
-  color: #123C91;
+  color: #09229d;
   font-weight: 800;
   line-height: .92;
   white-space: nowrap;
@@ -103,16 +106,16 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   line-height: 1.05;
 }
 .runner-trainer {
-  color: #8E141B;
+  color: #8e0808;
   white-space: nowrap;
 }
 .runner-jockey {
-  color: #2E7D16;
+  color: #246c08;
   text-align: right;
   white-space: nowrap;
 }
 .runner-draw {
-  color: #11529A;
+  color: #0b5bac;
 }
 .poster-footer {
   position: absolute;

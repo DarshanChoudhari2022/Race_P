@@ -16,11 +16,9 @@ export function calculatePosterLayout(runnerCount: number): PosterLayout {
   const available = footerTopMm - runnerTopMm;
   const runnerHeightMm = available / count;
 
-  let horseFontPt = 48;
-  if (count >= 8) horseFontPt = 44;
-  if (count >= 11) horseFontPt = 36;
-  if (count >= 13) horseFontPt = 32;
-  if (count >= 15) horseFontPt = Math.max(25, 420 / count);
+  let horseFontPt = 45;
+  if (count >= 13) horseFontPt = 40;
+  if (count >= 15) horseFontPt = Math.max(30, 450 / count);
 
   return {
     headerHeightMm,
@@ -28,7 +26,7 @@ export function calculatePosterLayout(runnerCount: number): PosterLayout {
     runnerHeightMm,
     footerTopMm,
     horseFontPt,
-    detailFontPt: Math.max(18, horseFontPt * 0.44),
-    numberFontPt: horseFontPt,
+    detailFontPt: Math.max(19.5, horseFontPt * 0.43),
+    numberFontPt: Math.max(horseFontPt, 46.5),
   };
 }
