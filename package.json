@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@fontsource/poppins": "^5.2.8",
+    "@sparticuz/chromium": "^149.0.0",
     "jszip": "^3.10.1",
     "next": "^15.4.3",
     "pdf-lib": "^1.17.1",

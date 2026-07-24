@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { chromium } from "playwright";
+import { chromium, type Browser, type LaunchOptions } from "playwright";
+import serverlessChromium from "@sparticuz/chromium";
 import { posterStyles } from "@/components/poster/posterStyles";
 import type { Race } from "@/types/race";
 import { ordinal } from "@/lib/utils/ordinal";
@@ -27,7 +28,7 @@ export async function exportCombinedPdf(races: Race[]): Promise<PosterExport> {
 
 export async function exportRacePng(race: Race): Promise<PosterExport> {
   const html = await renderHtml([race]);
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchChromium();
   try {
     const page = await browser.newPage({
       viewport: { width: 945, height: 2873 },
@@ -54,7 +55,7 @@ export async function writeSampleOutputs(races: Race[], outputDir: string): Prom
 }
 
 async function printHtmlToPdf(html: string): Promise<Buffer> {
-  const browser = await chromium.launch({ headless: true });
+  const browser = await launchChromium();
   try {
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle" });
@@ -67,6 +68,30 @@ async function printHtmlToPdf(html: string): Promise<Buffer> {
   } finally {
     await browser.close();
   }
+}
+
+async function launchChromium(): Promise<Browser> {
+  try {
+    return await chromium.launch({ headless: true });
+  } catch (localError) {
+    const executablePath = await serverlessChromium.executablePath();
+    if (!executablePath) {
+      throw new Error(
+        `Chromium is not available for poster generation. Local Playwright failed: ${errorMessage(localError)}. Run "npx playwright install chromium" locally or deploy with the bundled serverless Chromium dependency.`,
+      );
+    }
+
+    const options: LaunchOptions = {
+      args: [...serverlessChromium.args, "--font-render-hinting=none"],
+      executablePath,
+      headless: true,
+    };
+    return chromium.launch(options);
+  }
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 async function renderHtml(races: Race[]): Promise<string> {

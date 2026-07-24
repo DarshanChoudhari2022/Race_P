@@ -13,8 +13,13 @@ export async function exportPosterZip(races: Race[]): Promise<{ fileName: string
   for (const race of races) {
     const pdf = await exportRacePdf(race);
     zip.file(pdf.fileName, pdf.bytes);
-    const png = await exportRacePng(race);
-    zip.file(png.fileName, png.bytes);
+    try {
+      const png = await exportRacePng(race);
+      zip.file(png.fileName, png.bytes);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      zip.file(`race-${String(race.raceNumber).padStart(2, "0")}-png-export-error.txt`, `PDF export succeeded. PNG export failed: ${message}`);
+    }
   }
 
   const bytes = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
