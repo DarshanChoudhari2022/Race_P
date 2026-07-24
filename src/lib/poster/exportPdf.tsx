@@ -1,7 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { chromium, type Browser, type LaunchOptions } from "playwright";
-import serverlessChromium from "@sparticuz/chromium";
 import { posterStyles } from "@/components/poster/posterStyles";
 import type { Race } from "@/types/race";
 import { ordinal } from "@/lib/utils/ordinal";
@@ -74,10 +73,11 @@ async function launchChromium(): Promise<Browser> {
   try {
     return await chromium.launch({ headless: true });
   } catch (localError) {
+    const serverlessChromium = (await import("@sparticuz/chromium")).default;
     const executablePath = await serverlessChromium.executablePath();
     if (!executablePath) {
       throw new Error(
-        `Chromium is not available for poster generation. Local Playwright failed: ${errorMessage(localError)}. Run "npx playwright install chromium" locally or deploy with the bundled serverless Chromium dependency.`,
+        `Chromium is not available for poster generation. Local Playwright failed: ${errorMessage(localError)}. The serverless Chromium fallback could not find its executable. Ensure @sparticuz/chromium is externalized and its bin folder is included in the deployment.`,
       );
     }
 
