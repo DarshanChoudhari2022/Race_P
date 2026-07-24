@@ -11,6 +11,7 @@ export default function Home() {
   const [status, setStatus] = useState("Upload an IndiaRace PDF to begin.");
   const [uploadedFile, setUploadedFile] = useState("");
   const [step, setStep] = useState<"idle" | "uploaded" | "extracting" | "review" | "generating" | "done" | "error">("idle");
+  const [errorTitle, setErrorTitle] = useState("Upload failed");
   const [busy, setBusy] = useState(false);
   const race = races[active];
   const warnings = useMemo(() => races.flatMap((item) => item.warnings ?? []), [races]);
@@ -41,6 +42,7 @@ export default function Home() {
       setStep("review");
       setStatus(`Review ready: detected ${result.races.length} races from ${result.source.replaceAll("_", " ")}.`);
     } catch (error) {
+      setErrorTitle("Upload failed");
       setStep("error");
       setStatus(error instanceof Error ? error.message : "Extraction failed.");
     } finally {
@@ -101,11 +103,14 @@ export default function Home() {
       const link = document.createElement("a");
       link.href = url;
       link.download = response.headers.get("content-disposition")?.match(/filename="([^"]+)"/)?.[1] ?? "race-posters.zip";
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(url);
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(url), 1_000);
       setStep("done");
       setStatus("Download ready.");
     } catch (error) {
+      setErrorTitle("Generation failed");
       setStep("error");
       setStatus(error instanceof Error ? error.message : "Generation failed.");
     } finally {
@@ -160,7 +165,7 @@ export default function Home() {
 
       {step === "error" && (
         <section className="error-state">
-          <strong>Upload failed</strong>
+          <strong>{errorTitle}</strong>
           <span>{status}</span>
         </section>
       )}

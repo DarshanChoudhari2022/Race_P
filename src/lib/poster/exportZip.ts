@@ -1,25 +1,19 @@
 import JSZip from "jszip";
 import type { Race } from "@/types/race";
-import { exportCombinedPdf, exportRacePdf, exportRacePng } from "./exportPdf";
+import { exportPosterAssets } from "./exportPdf";
 
 export async function exportPosterZip(races: Race[]): Promise<{ fileName: string; bytes: Buffer }> {
   const zip = new JSZip();
   const first = races[0];
   const base = `${slug(first?.venue ?? "race")}-race-posters-${first?.date ?? "output"}`;
 
-  const combined = await exportCombinedPdf(races);
-  zip.file(combined.fileName, combined.bytes);
-
-  for (const race of races) {
-    const pdf = await exportRacePdf(race);
+  const assets = await exportPosterAssets(races);
+  zip.file(assets.combinedPdf.fileName, assets.combinedPdf.bytes);
+  for (const pdf of assets.racePdfs) {
     zip.file(pdf.fileName, pdf.bytes);
-    try {
-      const png = await exportRacePng(race);
-      zip.file(png.fileName, png.bytes);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      zip.file(`race-${String(race.raceNumber).padStart(2, "0")}-png-export-error.txt`, `PDF export succeeded. PNG export failed: ${message}`);
-    }
+  }
+  for (const png of assets.racePngs) {
+    zip.file(png.fileName, png.bytes);
   }
 
   const bytes = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });

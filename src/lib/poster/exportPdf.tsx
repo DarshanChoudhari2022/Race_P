@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { chromium, type Browser, type LaunchOptions } from "playwright";
+import { PDFDocument } from "pdf-lib";
+import { chromium, type Browser, type LaunchOptions, type Page } from "playwright";
 import { posterStyles } from "@/components/poster/posterStyles";
 import type { Race } from "@/types/race";
 import { ordinal } from "@/lib/utils/ordinal";
@@ -12,61 +13,112 @@ export interface PosterExport {
   bytes: Buffer;
 }
 
+export interface PosterAssetBundle {
+  combinedPdf: PosterExport;
+  racePdfs: PosterExport[];
+  racePngs: PosterExport[];
+}
+
 export async function exportRacePdf(race: Race): Promise<PosterExport> {
-  const html = await renderHtml([race]);
-  const bytes = await printHtmlToPdf(html);
-  return { fileName: raceFileName(race, "pdf"), bytes };
+  const assets = await exportPosterAssets([race], false);
+  return assets.racePdfs[0];
 }
 
 export async function exportCombinedPdf(races: Race[]): Promise<PosterExport> {
-  const html = await renderHtml(races);
-  const bytes = await printHtmlToPdf(html);
-  const first = races[0];
-  return { fileName: `${slug(first?.venue ?? "race")}-race-posters-${first?.date ?? "output"}.pdf`, bytes };
+  const assets = await exportPosterAssets(races, false);
+  return assets.combinedPdf;
 }
 
 export async function exportRacePng(race: Race): Promise<PosterExport> {
-  const html = await renderHtml([race]);
+  const assets = await exportPosterAssets([race], true);
+  return assets.racePngs[0];
+}
+
+export async function exportPosterAssets(races: Race[], includePngs = true): Promise<PosterAssetBundle> {
+  if (races.length === 0) {
+    throw new Error("At least one race is required for poster generation.");
+  }
+
+  const styles = await exportStyles();
+  const html = renderDocument(styles, races.map(renderRacePosterHtml).join(""));
   const browser = await launchChromium();
+  let combinedBytes: Buffer;
+  const racePngs: PosterExport[] = [];
+
   try {
     const page = await browser.newPage({
       viewport: { width: 945, height: 2873 },
       deviceScaleFactor: 3.125,
     });
-    await page.setContent(html, { waitUntil: "networkidle" });
-    await page.evaluate(() => document.fonts.ready);
-    const locator = page.locator(".race-poster").first();
-    const bytes = await locator.screenshot({ type: "png" });
-    return { fileName: raceFileName(race, "png"), bytes };
+    page.setDefaultTimeout(30_000);
+    await loadPosterHtml(page, html);
+    combinedBytes = Buffer.from(
+      await page.pdf({
+        printBackground: true,
+        preferCSSPageSize: true,
+      }),
+    );
+
+    if (includePngs) {
+      for (let index = 0; index < races.length; index += 1) {
+        await loadPosterHtml(page, renderDocument(styles, renderRacePosterHtml(races[index])));
+        const bytes = await page.locator(".race-poster").screenshot({
+          type: "png",
+          animations: "disabled",
+        });
+        racePngs.push({ fileName: raceFileName(races[index], "png"), bytes });
+      }
+    }
   } finally {
-    await browser.close();
+    await browser.close().catch(() => undefined);
   }
+
+  const first = races[0];
+  return {
+    combinedPdf: {
+      fileName: `${slug(first.venue)}-race-posters-${first.date}.pdf`,
+      bytes: combinedBytes,
+    },
+    racePdfs: await splitRacePdfs(combinedBytes, races),
+    racePngs,
+  };
 }
 
 export async function writeSampleOutputs(races: Race[], outputDir: string): Promise<void> {
   await mkdir(outputDir, { recursive: true });
-  const combined = await exportCombinedPdf(races);
-  await writeFile(path.join(outputDir, combined.fileName), combined.bytes);
-  for (const race of races) {
-    const pdf = await exportRacePdf(race);
+  const assets = await exportPosterAssets(races, false);
+  await writeFile(path.join(outputDir, assets.combinedPdf.fileName), assets.combinedPdf.bytes);
+  for (const pdf of assets.racePdfs) {
     await writeFile(path.join(outputDir, pdf.fileName), pdf.bytes);
   }
 }
 
-async function printHtmlToPdf(html: string): Promise<Buffer> {
-  const browser = await launchChromium();
-  try {
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle" });
-    await page.evaluate(() => document.fonts.ready);
-    const bytes = await page.pdf({
-      printBackground: true,
-      preferCSSPageSize: true,
-    });
-    return Buffer.from(bytes);
-  } finally {
-    await browser.close();
+async function loadPosterHtml(page: Page, html: string): Promise<void> {
+  await page.setContent(html, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page.evaluate(async () => {
+    if ("fonts" in document) {
+      await document.fonts.ready;
+    }
+  });
+}
+
+async function splitRacePdfs(combinedBytes: Buffer, races: Race[]): Promise<PosterExport[]> {
+  const source = await PDFDocument.load(combinedBytes);
+  if (source.getPageCount() !== races.length) {
+    throw new Error(`Poster PDF page count mismatch: expected ${races.length}, generated ${source.getPageCount()}.`);
   }
+
+  return Promise.all(
+    races.map(async (race, index) => {
+      const document = await PDFDocument.create();
+      const [page] = await document.copyPages(source, [index]);
+      document.addPage(page);
+      return {
+        fileName: raceFileName(race, "pdf"),
+        bytes: Buffer.from(await document.save()),
+      };
+    }),
+  );
 }
 
 async function launchChromium(): Promise<Browser> {
@@ -94,9 +146,8 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-async function renderHtml(races: Race[]): Promise<string> {
-  const body = races.map(renderRacePosterHtml).join("");
-  return `<!doctype html><html><head><meta charset="utf-8"><style>${await exportStyles()}</style></head><body>${body}</body></html>`;
+function renderDocument(styles: string, body: string): string {
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${styles}</style></head><body>${body}</body></html>`;
 }
 
 function renderRacePosterHtml(race: Race): string {
