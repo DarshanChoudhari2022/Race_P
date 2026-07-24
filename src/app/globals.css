@@ -1,0 +1,22 @@
+@import "@fontsource/poppins/400.css";
+@import "@fontsource/poppins/500.css";
+@import "@fontsource/poppins/600.css";
+@import "@fontsource/poppins/700.css";
+@import "@fontsource/poppins/800.css";
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f6f7f9;
+  color: #111827;
+  font-family: "Poppins", sans-serif;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
