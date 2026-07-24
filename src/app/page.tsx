@@ -132,12 +132,38 @@ export default function Home() {
       </section>
 
       <section className="stepbar">
-        <Step label="PDF Uploaded" active={["uploaded", "extracting", "review", "generating", "done"].includes(step)} current={step === "uploaded"} />
-        <Step label="Extracting Data" active={["review", "generating", "done"].includes(step)} current={step === "extracting"} />
-        <Step label="Review & Edit" active={["review", "generating", "done"].includes(step)} current={step === "review"} />
-        <Step label="Generate Output" active={step === "done"} current={step === "generating"} />
+        <div className="task-progress" style={{ ["--progress" as string]: `${progressForStep(step)}%` }}>
+          <Step index={1} label="PDF Uploaded" active={["uploaded", "extracting", "review", "generating", "done"].includes(step)} current={step === "uploaded"} />
+          <Step index={2} label="Extract Data" active={["review", "generating", "done"].includes(step)} current={step === "extracting"} />
+          <Step index={3} label="Review Posters" active={["review", "generating", "done"].includes(step)} current={step === "review"} />
+          <Step index={4} label="Download ZIP" active={step === "done"} current={step === "generating"} />
+        </div>
         {uploadedFile && <div className="file-pill">{uploadedFile}</div>}
       </section>
+
+      {step === "idle" && (
+        <section className="empty-state">
+          <strong>Upload a race-card PDF</strong>
+          <span>The app will extract all races, open the review UI, show poster previews, and then generate print-ready output.</span>
+        </section>
+      )}
+
+      {step === "extracting" && (
+        <section className="processing-state">
+          <div className="spinner" />
+          <div>
+            <strong>PDF uploaded successfully.</strong>
+            <span>Extracting race details, runners, trainers, jockeys, and draw numbers.</span>
+          </div>
+        </section>
+      )}
+
+      {step === "error" && (
+        <section className="error-state">
+          <strong>Upload failed</strong>
+          <span>{status}</span>
+        </section>
+      )}
 
       {races.length > 0 && (
         <section className="workspace">
@@ -199,8 +225,30 @@ export default function Home() {
   );
 }
 
-function Step({ label, active, current }: { label: string; active: boolean; current: boolean }) {
-  return <div className={`step ${active ? "active" : ""} ${current ? "current" : ""}`}>{label}</div>;
+function Step({ index, label, active, current }: { index: number; label: string; active: boolean; current: boolean }) {
+  return (
+    <div className={`step ${active ? "active" : ""} ${current ? "current" : ""}`}>
+      <span>{index}</span>
+      {label}
+    </div>
+  );
+}
+
+function progressForStep(step: string): number {
+  switch (step) {
+    case "uploaded":
+      return 12;
+    case "extracting":
+      return 38;
+    case "review":
+      return 68;
+    case "generating":
+      return 88;
+    case "done":
+      return 100;
+    default:
+      return 0;
+  }
 }
 
 function Field({ label, value, onChange }: { label: string; value: string | number; onChange: (value: string) => void }) {
@@ -248,16 +296,45 @@ const appStyles = `
   display: flex; align-items: center; gap: 10px;
   padding: 12px 20px; background: #fff; border-bottom: 1px solid #d7dce3;
 }
+.task-progress {
+  position: relative; flex: 1; display: grid; grid-template-columns: repeat(4, minmax(120px, 1fr)); gap: 10px;
+}
+.task-progress::before, .task-progress::after {
+  content: ""; position: absolute; left: 12px; right: 12px; top: 50%; height: 3px; transform: translateY(-50%);
+  background: #d7dce3; z-index: 0;
+}
+.task-progress::after {
+  right: auto; width: var(--progress); background: #123C91;
+}
 .step {
+  position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
   border: 1px solid #c9d1dc; color: #526070; background: #fff;
-  border-radius: 999px; padding: 7px 12px; font-size: 13px; font-weight: 700;
+  border-radius: 999px; padding: 8px 12px; font-size: 13px; font-weight: 700;
+}
+.step span {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 999px;
+  background: #eef2f6; color: #526070; font-size: 12px;
 }
 .step.active { border-color: #2E7D16; color: #2E7D16; background: #f0faed; }
 .step.current { border-color: #123C91; color: #123C91; background: #edf3ff; }
+.step.active span { background: #2E7D16; color: #fff; }
+.step.current span { background: #123C91; color: #fff; }
 .file-pill {
-  margin-left: auto; max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: #526070; font-size: 13px;
 }
+.empty-state, .processing-state, .error-state {
+  margin: 22px; padding: 22px; background: #fff; border: 1px solid #d7dce3; border-radius: 8px;
+  display: flex; flex-direction: column; gap: 6px; color: #526070;
+}
+.empty-state strong, .processing-state strong, .error-state strong { color: #111827; font-size: 18px; }
+.processing-state { flex-direction: row; align-items: center; }
+.spinner {
+  width: 28px; height: 28px; border: 3px solid #d7dce3; border-top-color: #123C91; border-radius: 999px;
+  animation: spin .8s linear infinite;
+}
+.error-state { border-color: #f2b8bd; background: #fff6f7; color: #8E141B; }
+@keyframes spin { to { transform: rotate(360deg); } }
 h1 { margin: 0; font-size: 22px; }
 p { margin: 3px 0 0; color: #526070; }
 button, .upload-button {

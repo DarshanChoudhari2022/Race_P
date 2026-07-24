@@ -29,8 +29,15 @@ type TextItem = {
   height: number;
 };
 
+type PdfjsWorkerGlobal = typeof globalThis & {
+  pdfjsWorker?: {
+    WorkerMessageHandler: unknown;
+  };
+};
+
 export async function extractPdfText(buffer: ArrayBuffer): Promise<ExtractedPdf> {
   ensureServerDomMatrix();
+  await ensurePdfjsWorkerGlobal();
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(buffer),
@@ -58,6 +65,12 @@ export async function extractPdfText(buffer: ArrayBuffer): Promise<ExtractedPdf>
   }
 
   return { pages: pdf.numPages, lines };
+}
+
+async function ensurePdfjsWorkerGlobal(): Promise<void> {
+  const target = globalThis as PdfjsWorkerGlobal;
+  if (target.pdfjsWorker?.WorkerMessageHandler) return;
+  target.pdfjsWorker = await import("pdfjs-dist/legacy/build/pdf.worker.mjs");
 }
 
 function ensureServerDomMatrix(): void {
