@@ -129,4 +129,12 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   font-weight: 400;
   color: #C218A7;
 }
+.poster-footer span {
+  display: block;
+  margin-top: 2mm;
+  font-size: 9pt;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: #111827;
+}
 `;

@@ -5,6 +5,8 @@ import { RacePoster } from "@/components/poster/RacePoster";
 import { posterStyles } from "@/components/poster/posterStyles";
 import type { ExtractionResult, Race } from "@/types/race";
 
+const BRACKETDEX_URL = "https://www.bracketdex.com/";
+
 export default function Home() {
   const [races, setRaces] = useState<Race[]>([]);
   const [active, setActive] = useState(0);
@@ -135,6 +137,9 @@ export default function Home() {
           <h1>Race Card Poster Generator</h1>
           <p>{status}</p>
         </div>
+        <a className="brand-link" href={BRACKETDEX_URL} target="_blank" rel="noreferrer">
+          Powered by BracketDex
+        </a>
         <label className={`upload-button ${busy ? "disabled" : ""}`}>
           Upload PDF
           <input type="file" accept="application/pdf" disabled={busy} onChange={upload} />
@@ -238,6 +243,11 @@ export default function Home() {
                   />
                 ))}
               </div>
+              <div className="form-brand">
+                <a href={BRACKETDEX_URL} target="_blank" rel="noreferrer">
+                  Powered by BracketDex
+                </a>
+              </div>
             </section>
           )}
 
@@ -250,6 +260,15 @@ export default function Home() {
           )}
         </section>
       )}
+
+      <footer className="site-footer">
+        <a href={BRACKETDEX_URL} target="_blank" rel="noreferrer">
+          Powered by BracketDex
+        </a>
+        <a href={BRACKETDEX_URL} target="_blank" rel="noreferrer">
+          Teacher Login
+        </a>
+      </footer>
     </main>
   );
 }
@@ -324,9 +343,14 @@ const appStyles = `
 .app-shell { min-height: 100vh; }
 .topbar {
   position: sticky; top: 0; z-index: 2;
-  display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center;
+  display: grid; grid-template-columns: 1fr auto auto auto; gap: 12px; align-items: center;
   padding: 16px 20px; background: #ffffff; border-bottom: 1px solid #d7dce3;
 }
+.brand-link, .form-brand a, .site-footer a {
+  color: #123C91; font-weight: 800; text-decoration: none;
+}
+.brand-link { white-space: nowrap; font-size: 13px; }
+.brand-link:hover, .form-brand a:hover, .site-footer a:hover { text-decoration: underline; }
 .stepbar {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 20px; background: #fff; border-bottom: 1px solid #d7dce3;
@@ -416,9 +440,19 @@ h2 { margin: 0; font-size: 18px; }
 .runner-table { display: grid; grid-template-columns: 58px 1.4fr 1fr 1fr 64px 74px; gap: 8px; align-items: center; }
 .runner-head { color: #526070; font-size: 12px; font-weight: 700; }
 .danger { color: #8E141B; }
+.form-brand {
+  display: flex; justify-content: flex-end; margin-top: 14px;
+  font-size: 12px;
+}
 .preview-pane { height: calc(100vh - 146px); overflow: auto; padding: 14px; }
 .preview-scale { transform: scale(.145); transform-origin: top left; width: 250mm; height: 760mm; }
+.site-footer {
+  display: flex; justify-content: flex-end; gap: 18px;
+  padding: 12px 20px 18px; font-size: 13px; background: #fff;
+}
 @media (max-width: 1180px) {
+  .topbar { grid-template-columns: 1fr auto auto; }
+  .brand-link { grid-column: 1 / -1; justify-self: start; }
   .workspace { grid-template-columns: 150px minmax(520px, 1fr); }
   .preview-pane { grid-column: 1 / -1; height: 520px; }
 }
