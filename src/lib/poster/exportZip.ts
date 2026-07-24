@@ -16,7 +16,11 @@ export async function exportPosterZip(races: Race[]): Promise<{ fileName: string
     zip.file(png.fileName, png.bytes);
   }
 
-  const bytes = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+  const bytes = await zip.generateAsync({
+    type: "nodebuffer",
+    compression: "DEFLATE",
+    compressionOptions: { level: 1 },
+  });
   return { fileName: `${base}.zip`, bytes };
 }
 

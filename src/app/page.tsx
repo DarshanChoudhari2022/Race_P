@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { RacePoster } from "@/components/poster/RacePoster";
 import { posterStyles } from "@/components/poster/posterStyles";
 import type { ExtractionResult, Race } from "@/types/race";
@@ -13,8 +13,16 @@ export default function Home() {
   const [step, setStep] = useState<"idle" | "uploaded" | "extracting" | "review" | "generating" | "done" | "error">("idle");
   const [errorTitle, setErrorTitle] = useState("Upload failed");
   const [busy, setBusy] = useState(false);
+  const [generationSeconds, setGenerationSeconds] = useState(0);
   const race = races[active];
   const warnings = useMemo(() => races.flatMap((item) => item.warnings ?? []), [races]);
+
+  useEffect(() => {
+    if (step !== "generating") return;
+    setGenerationSeconds(0);
+    const timer = window.setInterval(() => setGenerationSeconds((seconds) => seconds + 1), 1_000);
+    return () => window.clearInterval(timer);
+  }, [step]);
 
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -87,7 +95,7 @@ export default function Home() {
     if (races.length === 0) return;
     setBusy(true);
     setStep("generating");
-    setStatus("Generating vector PDFs, PNGs, and ZIP...");
+    setStatus("Generating print-ready posters...");
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -127,17 +135,18 @@ export default function Home() {
           <h1>Race Card Poster Generator</h1>
           <p>{status}</p>
         </div>
-        <label className="upload-button">
+        <label className={`upload-button ${busy ? "disabled" : ""}`}>
           Upload PDF
-          <input type="file" accept="application/pdf" onChange={upload} />
+          <input type="file" accept="application/pdf" disabled={busy} onChange={upload} />
         </label>
-        <button className="primary" disabled={busy || races.length === 0} onClick={generate}>
-          Download ZIP
+        <button className="primary download-button" aria-busy={step === "generating"} disabled={busy || races.length === 0} onClick={generate}>
+          {step === "generating" && <span className="button-spinner" aria-hidden="true" />}
+          {step === "generating" ? "Generating ZIP..." : "Download ZIP"}
         </button>
       </section>
 
       <section className="stepbar">
-        <div className="task-progress" style={{ ["--progress" as string]: `${progressForStep(step)}%` }}>
+        <div className="task-progress" style={{ ["--progress" as string]: `${progressForStep(step, generationSeconds)}%` }}>
           <Step index={1} label="PDF Uploaded" active={["uploaded", "extracting", "review", "generating", "done"].includes(step)} current={step === "uploaded"} />
           <Step index={2} label="Extract Data" active={["review", "generating", "done"].includes(step)} current={step === "extracting"} />
           <Step index={3} label="Review Posters" active={["review", "generating", "done"].includes(step)} current={step === "review"} />
@@ -159,6 +168,21 @@ export default function Home() {
           <div>
             <strong>PDF uploaded successfully.</strong>
             <span>Extracting race details, runners, trainers, jockeys, and draw numbers.</span>
+          </div>
+        </section>
+      )}
+
+      {step === "generating" && (
+        <section className="generation-state" role="status" aria-live="polite">
+          <div className="spinner" />
+          <div className="generation-copy">
+            <strong>{generationPhase(generationSeconds)}</strong>
+            <span>
+              Creating {races.length} print-ready posters. {generationSeconds} second{generationSeconds === 1 ? "" : "s"} elapsed.
+            </span>
+            <div className="generation-track" aria-hidden="true">
+              <span />
+            </div>
           </div>
         </section>
       )}
@@ -239,7 +263,7 @@ function Step({ index, label, active, current }: { index: number; label: string;
   );
 }
 
-function progressForStep(step: string): number {
+function progressForStep(step: string, generationSeconds: number): number {
   switch (step) {
     case "uploaded":
       return 12;
@@ -248,12 +272,18 @@ function progressForStep(step: string): number {
     case "review":
       return 68;
     case "generating":
-      return 88;
+      return Math.min(97, 78 + generationSeconds * 2.5);
     case "done":
       return 100;
     default:
       return 0;
   }
+}
+
+function generationPhase(seconds: number): string {
+  if (seconds < 2) return "Preparing vector PDFs...";
+  if (seconds < 7) return "Rendering 300 DPI poster images...";
+  return "Packaging your ZIP download...";
 }
 
 function Field({ label, value, onChange }: { label: string; value: string | number; onChange: (value: string) => void }) {
@@ -328,18 +358,37 @@ const appStyles = `
   max-width: 360px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   color: #526070; font-size: 13px;
 }
-.empty-state, .processing-state, .error-state {
+.empty-state, .processing-state, .generation-state, .error-state {
   margin: 22px; padding: 22px; background: #fff; border: 1px solid #d7dce3; border-radius: 8px;
   display: flex; flex-direction: column; gap: 6px; color: #526070;
 }
-.empty-state strong, .processing-state strong, .error-state strong { color: #111827; font-size: 18px; }
-.processing-state { flex-direction: row; align-items: center; }
+.empty-state strong, .processing-state strong, .generation-state strong, .error-state strong { color: #111827; font-size: 18px; }
+.processing-state, .generation-state { flex-direction: row; align-items: center; }
+.generation-state {
+  margin-bottom: 0; border-color: #b9c9ec; background: #f4f7ff;
+}
+.generation-copy { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.generation-track {
+  position: relative; height: 6px; margin-top: 8px; overflow: hidden; border-radius: 3px; background: #dbe4f5;
+}
+.generation-track span {
+  position: absolute; inset: 0 auto 0 -35%; width: 35%; background: #123C91;
+  animation: generation-slide 1.2s ease-in-out infinite;
+}
 .spinner {
   width: 28px; height: 28px; border: 3px solid #d7dce3; border-top-color: #123C91; border-radius: 999px;
   animation: spin .8s linear infinite;
 }
+.button-spinner {
+  width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.45); border-top-color: #fff; border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
 .error-state { border-color: #f2b8bd; background: #fff6f7; color: #8E141B; }
 @keyframes spin { to { transform: rotate(360deg); } }
+@keyframes generation-slide {
+  0% { left: -35%; }
+  100% { left: 100%; }
+}
 h1 { margin: 0; font-size: 22px; }
 p { margin: 3px 0 0; color: #526070; }
 button, .upload-button {
@@ -347,7 +396,9 @@ button, .upload-button {
   border-radius: 6px; padding: 9px 12px; cursor: pointer; font-weight: 700;
 }
 .primary { background: #123C91; color: #fff; border-color: #123C91; }
+.download-button { min-width: 142px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
 button:disabled { opacity: .5; cursor: not-allowed; }
+.upload-button.disabled { opacity: .5; cursor: not-allowed; }
 .upload-button input { display: none; }
 .workspace { display: grid; grid-template-columns: 180px minmax(560px, 1fr) 390px; gap: 18px; padding: 18px; }
 .race-tabs, .editor, .preview-pane { background: #fff; border: 1px solid #d7dce3; border-radius: 8px; }

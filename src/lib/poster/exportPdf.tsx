@@ -19,6 +19,8 @@ export interface PosterAssetBundle {
   racePngs: PosterExport[];
 }
 
+let embeddedPosterStyles: Promise<string> | undefined;
+
 export async function exportRacePdf(race: Race): Promise<PosterExport> {
   const assets = await exportPosterAssets([race], false);
   return assets.racePdfs[0];
@@ -188,6 +190,11 @@ function escapeHtml(value: string): string {
 }
 
 async function exportStyles(): Promise<string> {
+  embeddedPosterStyles ??= loadExportStyles();
+  return embeddedPosterStyles;
+}
+
+async function loadExportStyles(): Promise<string> {
   const publicDir = path.join(process.cwd(), "public", "fonts");
   const [regular, bold, extraBold] = await Promise.all([
     readFile(path.join(publicDir, "poppins-regular.woff2")),
