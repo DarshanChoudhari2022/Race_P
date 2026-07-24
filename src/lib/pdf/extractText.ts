@@ -30,6 +30,7 @@ type TextItem = {
 };
 
 export async function extractPdfText(buffer: ArrayBuffer): Promise<ExtractedPdf> {
+  ensureServerDomMatrix();
   const pdfjs = await import("pdfjs-dist/legacy/build/pdf.mjs");
   const loadingTask = pdfjs.getDocument({
     data: new Uint8Array(buffer),
@@ -57,6 +58,51 @@ export async function extractPdfText(buffer: ArrayBuffer): Promise<ExtractedPdf>
   }
 
   return { pages: pdf.numPages, lines };
+}
+
+function ensureServerDomMatrix(): void {
+  if (typeof globalThis.DOMMatrix !== "undefined") return;
+
+  class ServerDOMMatrix {
+    a = 1;
+    b = 0;
+    c = 0;
+    d = 1;
+    e = 0;
+    f = 0;
+
+    constructor(init?: number[]) {
+      if (Array.isArray(init) && init.length >= 6) {
+        [this.a, this.b, this.c, this.d, this.e, this.f] = init;
+      }
+    }
+
+    multiplySelf(): this {
+      return this;
+    }
+
+    preMultiplySelf(): this {
+      return this;
+    }
+
+    translate(): this {
+      return this;
+    }
+
+    scale(): this {
+      return this;
+    }
+
+    invertSelf(): this {
+      return this;
+    }
+  }
+
+  Object.defineProperty(globalThis, "DOMMatrix", {
+    value: ServerDOMMatrix,
+    configurable: true,
+    writable: true,
+  });
 }
 
 function splitTextItem(text: string, x: number, width: number, top: number, bottom: number, page: number): PdfWord[] {
