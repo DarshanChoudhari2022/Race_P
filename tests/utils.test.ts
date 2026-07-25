@@ -26,7 +26,7 @@ describe("poster layout", () => {
     expect(calculatePosterLayout(7).horseFontPt).toBe(45);
     expect(calculatePosterLayout(8).horseFontPt).toBe(45);
     expect(calculatePosterLayout(12).horseFontPt).toBe(45);
-    expect(calculatePosterLayout(14).horseFontPt).toBe(40);
+    expect(calculatePosterLayout(14).horseFontPt).toBe(45);
   });
 
   it("reduces long horse names without ellipsis", () => {

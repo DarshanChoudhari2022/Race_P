@@ -80,9 +80,8 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 }
 .runner-main {
   display: grid;
-  grid-template-columns: 18mm minmax(0, 1fr);
+  grid-template-columns: 22mm minmax(0, 1fr);
   align-items: baseline;
-  height: 23mm;
   overflow: visible;
 }
 .runner-number {
