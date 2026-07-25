@@ -25,6 +25,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   height: 760mm;
   position: relative;
   overflow: hidden;
+  clip-path: inset(0);
   background: #fff;
   color: #111;
   font-family: "Poppins", sans-serif;

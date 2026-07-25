@@ -64,9 +64,16 @@ export async function exportPosterAssets(races: Race[], includePngs = true): Pro
     if (includePngs) {
       for (let index = 0; index < races.length; index += 1) {
         await loadPosterHtml(page, renderDocument(styles, renderRacePosterHtml(races[index])));
-        const bytes = await page.locator(".race-poster").screenshot({
+        // Use page-level screenshot with explicit clip to exactly 760mm × 250mm.
+        // locator.screenshot() captures the full scroll height which can exceed 760mm
+        // due to absolutely-positioned children, causing the header to appear twice.
+        const PX_PER_MM = 96 / 25.4; // CSS pixels per mm at 96 dpi
+        const posterW = Math.round(250 * PX_PER_MM); // 945 px
+        const posterH = Math.round(760 * PX_PER_MM); // 2872 px
+        const bytes = await page.screenshot({
           type: "png",
           animations: "disabled",
+          clip: { x: 0, y: 0, width: posterW, height: posterH },
         });
         racePngs.push({ fileName: raceFileName(races[index], "png"), bytes });
       }
