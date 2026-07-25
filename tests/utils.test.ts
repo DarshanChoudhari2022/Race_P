@@ -25,8 +25,8 @@ describe("poster layout", () => {
   it("sizes common runner counts", () => {
     expect(calculatePosterLayout(7).horseFontPt).toBe(56);
     expect(calculatePosterLayout(8).horseFontPt).toBe(56);
-    expect(calculatePosterLayout(12).horseFontPt).toBe(56);
-    expect(calculatePosterLayout(14).horseFontPt).toBe(56);
+    expect(calculatePosterLayout(12).horseFontPt).toBe(38.5);
+    expect(calculatePosterLayout(14).horseFontPt).toBe(33);
   });
 
   it("reduces long horse names without ellipsis", () => {

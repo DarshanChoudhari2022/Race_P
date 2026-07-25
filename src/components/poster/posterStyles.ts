@@ -81,7 +81,8 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 }
 .runner-main {
   display: grid;
-  grid-template-columns: 18mm minmax(0, 1fr);
+  grid-template-columns: minmax(18mm, max-content) minmax(0, 1fr);
+  column-gap: 3.5mm;
   align-items: center;
   overflow: visible;
 }
@@ -101,7 +102,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: start;
-  padding-left: 18mm;
+  padding-left: 21.5mm;
   font-weight: 800;
   line-height: 1.05;
   margin-top: 1mm;
