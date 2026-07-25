@@ -81,7 +81,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 }
 .runner-main {
   display: grid;
-  grid-template-columns: 22mm minmax(0, 1fr);
+  grid-template-columns: 14mm minmax(0, 1fr);
   align-items: baseline;
   overflow: visible;
 }
@@ -101,7 +101,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   display: grid;
   grid-template-columns: minmax(0, 1fr) 78mm;
   align-items: start;
-  padding-left: 1mm;
+  padding-left: 14mm;
   font-weight: 800;
   line-height: 1.05;
   margin-top: 1mm;
@@ -109,6 +109,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 .runner-trainer {
   color: #8e0808;
   white-space: nowrap;
+  overflow: visible;
 }
 .runner-jockey {
   color: #246c08;
