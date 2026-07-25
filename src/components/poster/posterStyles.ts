@@ -122,16 +122,16 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 .poster-footer {
   position: absolute;
   right: 20mm;
-  bottom: 28mm;
+  bottom: 12mm;
   text-align: right;
-  font-size: 18pt;
-  line-height: 1.25;
-  font-weight: 400;
+  font-size: 45pt;
+  line-height: 1.1;
+  font-weight: 700;
   color: #1976D2;
 }
 .poster-footer strong {
   display: block;
-  font-weight: 400;
+  font-weight: 800;
   color: #C218A7;
 }
 `;
