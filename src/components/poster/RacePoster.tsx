@@ -33,6 +33,7 @@ export function RacePoster({
       <main className="poster-runners" style={{ top: `${layout.runnerTopMm}mm` }}>
         {race.runners.map((runner, index) => {
           const horseFont = runner.horseFontSize ?? fitHorseNameFontSize(runner.horseName, layout.horseFontPt);
+          const numberFont = runner.numberFontSize ?? horseFont;
           const trainerFont = runner.trainerFontSize ?? layout.detailFontPt;
           const jockeyFont = runner.jockeyFontSize ?? layout.detailFontPt;
           return (
@@ -45,7 +46,7 @@ export function RacePoster({
               }}
             >
               <div className="runner-main">
-                <span className="runner-number" style={{ fontSize: `${horseFont}pt` }}>
+                <span className="runner-number" style={{ fontSize: `${numberFont}pt` }}>
                   {runner.horseNumber}
                 </span>
                 <span className="runner-name" style={{ fontSize: `${horseFont}pt` }}>

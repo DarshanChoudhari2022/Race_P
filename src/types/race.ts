@@ -6,6 +6,7 @@ export interface Runner {
   horseName: string;
   trainer: string;
   jockey: string;
+  numberFontSize?: number;
   horseFontSize?: number;
   trainerFontSize?: number;
   jockeyFontSize?: number;

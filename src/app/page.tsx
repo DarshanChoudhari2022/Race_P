@@ -18,8 +18,11 @@ export default function Home() {
   const [errorTitle, setErrorTitle] = useState("Upload failed");
   const [busy, setBusy] = useState(false);
   const [generationSeconds, setGenerationSeconds] = useState(0);
+  const [previewZoom, setPreviewZoom] = useState(0.145);
+
   const race = races[active];
   const warnings = useMemo(() => races.flatMap((item) => item.warnings ?? []), [races]);
+  const layout = useMemo(() => (race ? calculatePosterLayout(race.runners.length) : null), [race]);
 
   useEffect(() => {
     if (step !== "generating") return;
@@ -80,18 +83,24 @@ export default function Home() {
     updateRace({ runners });
   }
 
-  function updateRunnerSize(index: number, field: "horseFontSize" | "trainerFontSize" | "jockeyFontSize", delta: number) {
+  function updateRunnerSize(
+    index: number,
+    field: "numberFontSize" | "horseFontSize" | "trainerFontSize" | "jockeyFontSize",
+    newSize: number,
+  ) {
     if (!race) return;
-    const layout = calculatePosterLayout(race.runners.length);
-    const runner = race.runners[index];
-    if (!runner) return;
-    const defaultSize =
-      field === "horseFontSize"
-        ? fitHorseNameFontSize(runner.horseName, layout.horseFontPt)
-        : layout.detailFontPt;
-    const currentSize = runner[field] ?? defaultSize;
-    const newSize = Math.max(8, Math.round((currentSize + delta) * 10) / 10);
-    const runners = race.runners.map((r, i) => (i === index ? { ...r, [field]: newSize } : r));
+    const validSize = Math.max(6, Math.round(newSize * 10) / 10);
+    const runners = race.runners.map((r, i) => (i === index ? { ...r, [field]: validSize } : r));
+    updateRace({ runners });
+  }
+
+  function updateAllRunnersSize(
+    field: "numberFontSize" | "horseFontSize" | "trainerFontSize" | "jockeyFontSize",
+    newSize: number,
+  ) {
+    if (!race) return;
+    const validSize = Math.max(6, Math.round(newSize * 10) / 10);
+    const runners = race.runners.map((r) => ({ ...r, [field]: validSize }));
     updateRace({ runners });
   }
 
@@ -145,6 +154,12 @@ export default function Home() {
     }
   }
 
+  // Calculate global baseline font sizes for the toolbar
+  const globalNumberSize = race?.runners[0]?.numberFontSize ?? layout?.numberFontPt ?? 56;
+  const globalHorseSize = race?.runners[0]?.horseFontSize ?? layout?.horseFontPt ?? 56;
+  const globalTrainerSize = race?.runners[0]?.trainerFontSize ?? layout?.detailFontPt ?? 26;
+  const globalJockeySize = race?.runners[0]?.jockeyFontSize ?? layout?.detailFontPt ?? 26;
+
   return (
     <main className="app-shell">
       <style>{appStyles}</style>
@@ -177,7 +192,7 @@ export default function Home() {
       {step === "idle" && (
         <section className="empty-state">
           <strong>Upload a race-card PDF</strong>
-          <span>The app will extract all races, open the review UI, show poster previews, and then generate print-ready output.</span>
+          <span>The app will extract all races, open the review UI, show live poster previews, and generate print-ready vector output.</span>
         </section>
       )}
 
@@ -235,18 +250,50 @@ export default function Home() {
                 <Field label="Distance" value={race.distanceMetres} onChange={(value) => updateRace({ distanceMetres: Number(value) })} />
               </div>
 
+              {/* Global Font Sizes Toolbar */}
+              <div className="global-font-bar">
+                <div className="global-font-header">
+                  <strong>Global Font Sizes</strong>
+                  <span>(Applies to all runners in this race at once)</span>
+                </div>
+                <div className="global-font-controls">
+                  <GlobalSizePill
+                    label="All Nos"
+                    sizeValue={globalNumberSize}
+                    onSizeChange={(val) => updateAllRunnersSize("numberFontSize", val)}
+                  />
+                  <GlobalSizePill
+                    label="All Horses"
+                    sizeValue={globalHorseSize}
+                    onSizeChange={(val) => updateAllRunnersSize("horseFontSize", val)}
+                  />
+                  <GlobalSizePill
+                    label="All Trainers"
+                    sizeValue={globalTrainerSize}
+                    onSizeChange={(val) => updateAllRunnersSize("trainerFontSize", val)}
+                  />
+                  <GlobalSizePill
+                    label="All Jockeys"
+                    sizeValue={globalJockeySize}
+                    onSizeChange={(val) => updateAllRunnersSize("jockeyFontSize", val)}
+                  />
+                </div>
+              </div>
+
               <div className="runner-toolbar">
-                <h2>Runners</h2>
+                <h2>Runners ({race.runners.length})</h2>
                 <button onClick={addRunner}>Add Runner</button>
               </div>
 
               <div className="runner-table">
-                <div className="runner-head">No.</div>
-                <div className="runner-head">Horse</div>
-                <div className="runner-head">Trainer</div>
-                <div className="runner-head">Jockey</div>
-                <div className="runner-head">Draw</div>
-                <div className="runner-head"></div>
+                <div className="runner-head">
+                  <div>No. & Size</div>
+                  <div>Horse Name & Size</div>
+                  <div>Trainer & Size</div>
+                  <div>Jockey & Size</div>
+                  <div>Draw</div>
+                  <div>Action</div>
+                </div>
                 {race.runners.map((runner, index) => (
                   <Row
                     key={`${runner.horseNumber}-${index}`}
@@ -262,10 +309,31 @@ export default function Home() {
             </section>
           )}
 
+          {/* Enhanced Live PDF Side Preview */}
           {race && (
             <aside className="preview-pane">
-              <div className="preview-scale">
-                <RacePoster race={race} />
+              <div className="preview-header">
+                <div className="preview-title">
+                  <span className="live-dot" />
+                  <strong>Live PDF Preview</strong>
+                </div>
+                <div className="zoom-controls">
+                  <button type="button" className="zoom-btn" onClick={() => setPreviewZoom((z) => Math.max(0.08, z - 0.02))} title="Zoom Out">
+                    -
+                  </button>
+                  <span className="zoom-val">{Math.round(previewZoom * 1000)}%</span>
+                  <button type="button" className="zoom-btn" onClick={() => setPreviewZoom((z) => Math.min(0.35, z + 0.02))} title="Zoom In">
+                    +
+                  </button>
+                  <button type="button" className="zoom-btn reset" onClick={() => setPreviewZoom(0.145)} title="Reset zoom">
+                    Fit
+                  </button>
+                </div>
+              </div>
+              <div className="preview-viewport">
+                <div className="preview-scale" style={{ transform: `scale(${previewZoom})` }}>
+                  <RacePoster race={race} />
+                </div>
               </div>
             </aside>
           )}
@@ -322,34 +390,76 @@ function Field({ label, value, onChange }: { label: string; value: string | numb
   );
 }
 
+function GlobalSizePill({
+  label,
+  sizeValue,
+  onSizeChange,
+}: {
+  label: string;
+  sizeValue: number;
+  onSizeChange: (newSize: number) => void;
+}) {
+  return (
+    <div className="global-size-item">
+      <span className="global-size-tag">{label}:</span>
+      <div className="size-control-pill">
+        <button type="button" className="size-btn" onClick={() => onSizeChange(sizeValue - 1)} aria-label={`Decrease ${label} size`}>
+          -
+        </button>
+        <input
+          type="number"
+          className="size-num-input"
+          value={Math.round(sizeValue)}
+          onChange={(e) => {
+            const val = Number(e.target.value);
+            if (!isNaN(val) && val > 0) onSizeChange(val);
+          }}
+          aria-label={`${label} font size in pt`}
+        />
+        <span className="size-unit">pt</span>
+        <button type="button" className="size-btn" onClick={() => onSizeChange(sizeValue + 1)} aria-label={`Increase ${label} size`}>
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function SizedInput({
   label,
   value,
   placeholder,
   onChange,
   sizeValue,
-  onIncrease,
-  onDecrease,
+  onSizeChange,
 }: {
-  label: string;
+  label?: string;
   value: string;
   placeholder?: string;
   onChange: (val: string) => void;
   sizeValue: number;
-  onIncrease: () => void;
-  onDecrease: () => void;
+  onSizeChange: (newSize: number) => void;
 }) {
   return (
     <div className="sized-input-group">
-      <span className="mobile-label">{label}</span>
+      {label && <span className="mobile-label">{label}</span>}
       <input value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)} />
-      <div className="size-control-pill" title={`Adjust ${label} font size`}>
-        <span className="size-label-tag">{label} Size:</span>
-        <button type="button" className="size-btn" onClick={onDecrease} aria-label={`Decrease ${label} size`}>
+      <div className="size-control-pill" title="Type size or click +/-">
+        <button type="button" className="size-btn" onClick={() => onSizeChange(sizeValue - 1)} aria-label="Decrease size">
           -
         </button>
-        <span className="size-val">{Math.round(sizeValue)}pt</span>
-        <button type="button" className="size-btn" onClick={onIncrease} aria-label={`Increase ${label} size`}>
+        <input
+          type="number"
+          className="size-num-input"
+          value={Math.round(sizeValue)}
+          onChange={(e) => {
+            const val = Number(e.target.value);
+            if (!isNaN(val) && val > 0) onSizeChange(val);
+          }}
+          aria-label="Font size in pt"
+        />
+        <span className="size-unit">pt</span>
+        <button type="button" className="size-btn" onClick={() => onSizeChange(sizeValue + 1)} aria-label="Increase size">
           +
         </button>
       </div>
@@ -369,11 +479,16 @@ function Row({
   index: number;
   runnerCount: number;
   updateRunner: (index: number, field: keyof Race["runners"][number], value: string) => void;
-  updateRunnerSize: (index: number, field: "horseFontSize" | "trainerFontSize" | "jockeyFontSize", delta: number) => void;
+  updateRunnerSize: (
+    index: number,
+    field: "numberFontSize" | "horseFontSize" | "trainerFontSize" | "jockeyFontSize",
+    newSize: number,
+  ) => void;
   deleteRunner: (index: number) => void;
 }) {
   const layout = calculatePosterLayout(runnerCount);
   const horseSize = runner.horseFontSize ?? fitHorseNameFontSize(runner.horseName, layout.horseFontPt);
+  const numberSize = runner.numberFontSize ?? horseSize;
   const trainerSize = runner.trainerFontSize ?? layout.detailFontPt;
   const jockeySize = runner.jockeyFontSize ?? layout.detailFontPt;
 
@@ -381,19 +496,37 @@ function Row({
     <div className="runner-row-item">
       <div className="runner-cell-num">
         <span className="mobile-label">No.</span>
-        <input value={runner.horseNumber} onChange={(event) => updateRunner(index, "horseNumber", event.target.value)} />
+        <input
+          value={runner.horseNumber}
+          onChange={(event) => updateRunner(index, "horseNumber", event.target.value)}
+        />
+        <div className="size-control-pill mini" title="Horse No. font size">
+          <button type="button" className="size-btn" onClick={() => updateRunnerSize(index, "numberFontSize", numberSize - 1)}>-</button>
+          <input
+            type="number"
+            className="size-num-input"
+            value={Math.round(numberSize)}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              if (!isNaN(val) && val > 0) updateRunnerSize(index, "numberFontSize", val);
+            }}
+          />
+          <span className="size-unit">pt</span>
+          <button type="button" className="size-btn" onClick={() => updateRunnerSize(index, "numberFontSize", numberSize + 1)}>+</button>
+        </div>
       </div>
+
       <div className="runner-cell-horse">
         <SizedInput
-          label="Horse"
+          label="Horse Name"
           value={runner.horseName}
           placeholder="HORSE NAME"
           onChange={(val) => updateRunner(index, "horseName", val.toUpperCase())}
           sizeValue={horseSize}
-          onIncrease={() => updateRunnerSize(index, "horseFontSize", 1)}
-          onDecrease={() => updateRunnerSize(index, "horseFontSize", -1)}
+          onSizeChange={(newSize) => updateRunnerSize(index, "horseFontSize", newSize)}
         />
       </div>
+
       <div className="runner-cell-trainer">
         <SizedInput
           label="Trainer"
@@ -401,10 +534,10 @@ function Row({
           placeholder="Trainer"
           onChange={(val) => updateRunner(index, "trainer", val)}
           sizeValue={trainerSize}
-          onIncrease={() => updateRunnerSize(index, "trainerFontSize", 1)}
-          onDecrease={() => updateRunnerSize(index, "trainerFontSize", -1)}
+          onSizeChange={(newSize) => updateRunnerSize(index, "trainerFontSize", newSize)}
         />
       </div>
+
       <div className="runner-cell-jockey">
         <SizedInput
           label="Jockey"
@@ -412,14 +545,15 @@ function Row({
           placeholder="Jockey"
           onChange={(val) => updateRunner(index, "jockey", val)}
           sizeValue={jockeySize}
-          onIncrease={() => updateRunnerSize(index, "jockeyFontSize", 1)}
-          onDecrease={() => updateRunnerSize(index, "jockeyFontSize", -1)}
+          onSizeChange={(newSize) => updateRunnerSize(index, "jockeyFontSize", newSize)}
         />
       </div>
+
       <div className="runner-cell-draw">
         <span className="mobile-label">Draw</span>
         <input value={runner.drawNumber ?? ""} placeholder="Draw" onChange={(event) => updateRunner(index, "drawNumber", event.target.value)} />
       </div>
+
       <div className="runner-cell-delete">
         <button className="danger" onClick={() => deleteRunner(index)}>
           Delete
@@ -513,55 +647,97 @@ button, .upload-button {
 button:disabled { opacity: .5; cursor: not-allowed; }
 .upload-button.disabled { opacity: .5; cursor: not-allowed; }
 .upload-button input { display: none; }
-.workspace { display: grid; grid-template-columns: 180px minmax(560px, 1fr) 390px; gap: 18px; padding: 18px; }
+.workspace { display: grid; grid-template-columns: 170px minmax(520px, 1fr) 420px; gap: 16px; padding: 16px; }
 .race-tabs, .editor, .preview-pane { background: #fff; border: 1px solid #d7dce3; border-radius: 8px; }
 .race-tabs { padding: 10px; height: calc(100vh - 146px); overflow: auto; }
 .race-tabs button { width: 100%; display: flex; justify-content: space-between; margin-bottom: 8px; }
 .race-tabs .selected { background: #edf3ff; border-color: #123C91; }
 .race-tabs span { color: #526070; font-weight: 500; }
 .warning { margin-top: 10px; color: #8E141B; font-size: 13px; line-height: 1.35; }
-.editor { padding: 16px; overflow: auto; height: calc(100vh - 146px); }
-.race-fields { display: grid; grid-template-columns: repeat(5, minmax(90px, 1fr)); gap: 10px; }
+.editor { padding: 16px; overflow: auto; height: calc(100vh - 146px); display: flex; flex-direction: column; gap: 14px; }
+.race-fields { display: grid; grid-template-columns: repeat(5, minmax(80px, 1fr)); gap: 10px; }
 label span { display: block; color: #526070; font-size: 12px; margin-bottom: 4px; }
-input { width: 100%; border: 1px solid #c9d1dc; border-radius: 6px; padding: 8px; }
-.runner-toolbar { display: flex; justify-content: space-between; align-items: center; margin: 18px 0 10px; }
+input { width: 100%; border: 1px solid #c9d1dc; border-radius: 6px; padding: 8px; font-size: 13px; }
+
+/* Global Font Toolbar */
+.global-font-bar {
+  background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.global-font-header { display: flex; align-items: center; gap: 8px; }
+.global-font-header strong { color: #0f172a; font-size: 13px; }
+.global-font-header span { color: #64748b; font-size: 12px; }
+.global-font-controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.global-size-item { display: flex; align-items: center; gap: 6px; }
+.global-size-tag { font-size: 12px; font-weight: 700; color: #334155; }
+
+.runner-toolbar { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
 h2 { margin: 0; font-size: 18px; }
-.runner-table { display: flex; flex-direction: column; gap: 8px; }
-.runner-head { display: grid; grid-template-columns: 52px 1.4fr 1fr 1fr 58px 68px; gap: 8px; color: #526070; font-size: 12px; font-weight: 700; padding-bottom: 4px; border-bottom: 2px solid #e2e8f0; }
+.runner-table { display: flex; flex-direction: column; gap: 6px; }
+.runner-head {
+  display: grid; grid-template-columns: 80px 1.4fr 1fr 1fr 54px 64px; gap: 8px;
+  color: #526070; font-size: 12px; font-weight: 700; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0;
+}
 .danger { color: #8E141B; }
-.preview-pane { height: calc(100vh - 146px); overflow: auto; padding: 14px; }
-.preview-scale { transform: scale(.145); transform-origin: top left; width: 250mm; height: 760mm; }
-.site-footer {
-  display: flex; justify-content: flex-end; gap: 18px;
-  padding: 12px 20px 18px; font-size: 13px; background: #fff;
-}
-.sized-input-group {
-  display: flex; flex-direction: column; gap: 4px; width: 100%;
-}
+
+/* Editable Sized Input Component */
+.sized-input-group { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.runner-cell-num { display: flex; flex-direction: column; gap: 4px; }
 .size-control-pill {
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: 2px;
   background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;
-  padding: 2px 6px; font-size: 11px; align-self: flex-start;
+  padding: 2px 4px; font-size: 11px; align-self: flex-start;
 }
-.size-label-tag { color: #64748b; font-weight: 600; font-size: 10px; text-transform: uppercase; }
+.size-control-pill.mini { padding: 1px 2px; gap: 1px; }
 .size-btn {
-  width: 22px; height: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 4px;
-  cursor: pointer; color: #123C91; line-height: 1; user-select: none;
+  width: 20px; height: 20px; padding: 0; display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 3px;
+  cursor: pointer; color: #123C91; line-height: 1; user-select: none; flex-shrink: 0;
 }
 .size-btn:hover { background: #edf3ff; border-color: #123C91; }
-.size-val { font-weight: 700; color: #0f172a; min-width: 28px; text-align: center; }
+.size-num-input {
+  width: 36px !important; padding: 2px 2px !important; height: 20px; text-align: center;
+  border: 1px solid #cbd5e1 !important; border-radius: 3px !important; font-weight: 700; color: #0f172a;
+  font-size: 11px !important; -moz-appearance: textfield;
+}
+.size-num-input::-webkit-outer-spin-button,
+.size-num-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.size-unit { font-size: 10px; font-weight: 600; color: #64748b; padding-right: 2px; }
 
 .runner-row-item {
-  display: grid; grid-template-columns: 52px 1.4fr 1fr 1fr 58px 68px; gap: 8px; align-items: start;
+  display: grid; grid-template-columns: 80px 1.4fr 1fr 1fr 54px 64px; gap: 8px; align-items: start;
   padding: 8px 0; border-bottom: 1px solid #e2e8f0;
 }
 .runner-row-item:last-child { border-bottom: none; }
 .mobile-label { display: none; font-size: 11px; font-weight: 700; color: #64748b; margin-bottom: 2px; }
 
-@media (max-width: 1180px) {
-  .workspace { grid-template-columns: 150px minmax(520px, 1fr); }
-  .preview-pane { grid-column: 1 / -1; height: 520px; }
+/* Enhanced Side Live Preview */
+.preview-pane {
+  height: calc(100vh - 146px); display: flex; flex-direction: column; overflow: hidden; padding: 0; background: #f8fafc;
+}
+.preview-header {
+  display: flex; justify-content: space-between; align-items: center; padding: 10px 12px;
+  background: #ffffff; border-bottom: 1px solid #d7dce3; flex-shrink: 0;
+}
+.preview-title { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #0f172a; }
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); animation: pulse 2s infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+.zoom-controls { display: flex; align-items: center; gap: 4px; }
+.zoom-btn {
+  padding: 2px 7px; font-size: 12px; font-weight: 700; background: #ffffff; border: 1px solid #cbd5e1;
+  border-radius: 4px; cursor: pointer; color: #334155;
+}
+.zoom-btn:hover { background: #edf3ff; color: #123C91; border-color: #123C91; }
+.zoom-btn.reset { font-size: 11px; padding: 2px 6px; }
+.zoom-val { font-size: 11px; font-weight: 700; color: #64748b; min-width: 40px; text-align: center; }
+.preview-viewport { flex: 1; overflow: auto; padding: 14px; display: flex; justify-content: center; align-items: flex-start; }
+.preview-scale { transform-origin: top center; width: 250mm; height: 760mm; transition: transform 0.1s ease-out; }
+
+@media (max-width: 1280px) {
+  .workspace { grid-template-columns: 150px minmax(440px, 1fr) 360px; }
 }
 
 @media (max-width: 1024px) {
@@ -571,11 +747,12 @@ h2 { margin: 0; font-size: 18px; }
   .race-tabs { height: auto; display: flex; overflow-x: auto; gap: 8px; white-space: nowrap; padding: 8px; }
   .race-tabs button { width: auto; margin-bottom: 0; flex-shrink: 0; }
   .editor { height: auto; }
+  .preview-pane { grid-column: 1 / -1; height: 580px; }
   .race-fields { grid-template-columns: repeat(2, 1fr); }
   .runner-head { display: none; }
   .runner-row-item {
     display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
-    background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px;
+    background: #ffffff; border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px;
   }
   .mobile-label { display: block; }
   .runner-cell-num { grid-column: 1; }
