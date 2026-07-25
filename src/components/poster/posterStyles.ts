@@ -103,6 +103,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   padding-left: 1mm;
   font-weight: 800;
   line-height: 1.05;
+  margin-top: 3mm;
 }
 .runner-trainer {
   color: #8e0808;
