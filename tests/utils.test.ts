@@ -23,10 +23,10 @@ describe("race utility formatting", () => {
 
 describe("poster layout", () => {
   it("sizes common runner counts", () => {
-    expect(calculatePosterLayout(7).horseFontPt).toBe(45);
-    expect(calculatePosterLayout(8).horseFontPt).toBe(45);
-    expect(calculatePosterLayout(12).horseFontPt).toBe(45);
-    expect(calculatePosterLayout(14).horseFontPt).toBe(45);
+    expect(calculatePosterLayout(7).horseFontPt).toBe(52);
+    expect(calculatePosterLayout(8).horseFontPt).toBe(52);
+    expect(calculatePosterLayout(12).horseFontPt).toBe(52);
+    expect(calculatePosterLayout(14).horseFontPt).toBe(52);
   });
 
   it("reduces long horse names without ellipsis", () => {
