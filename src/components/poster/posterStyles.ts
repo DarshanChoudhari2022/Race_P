@@ -40,32 +40,32 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   color: #121315;
 }
 .poster-date {
-  font-size: 14.25pt;
+  font-size: 18pt;
   line-height: 1;
   font-weight: 800;
   color: #121315;
 }
 .poster-venue {
   margin-top: 3mm;
-  font-size: 25.5pt;
+  font-size: 32pt;
   line-height: 1;
   font-weight: 800;
   letter-spacing: 0;
   color: #121315;
 }
 .poster-race-line {
-  margin-top: 8mm;
+  margin-top: 6mm;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0;
-  font-size: 25.5pt;
+  font-size: 32pt;
   line-height: 1;
   font-weight: 800;
   color: #121315;
 }
 .poster-bracket {
-  font-size: 39pt;
+  font-size: 48pt;
   line-height: .8;
   padding: 0 1mm;
 }
@@ -122,10 +122,10 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 .poster-footer {
   position: absolute;
   right: 20mm;
-  bottom: 12mm;
+  bottom: 18mm;
   text-align: right;
-  font-size: 45pt;
-  line-height: 1.1;
+  font-size: 30pt;
+  line-height: 1.15;
   font-weight: 700;
   color: #1976D2;
 }
