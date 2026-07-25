@@ -42,6 +42,7 @@ describe("poster layout", () => {
 
   it("reduces long horse names without ellipsis", () => {
     expect(fitHorseNameFontSize("QUEEN OF BEAUTIES", 45)).toBe(45);
+    expect(fitHorseNameFontSize("PROMISEOFTHEFUTURE", 56)).toBeLessThan(56);
     expect(fitHorseNameFontSize("SKY FULL OF STARS FOREVER", 45)).toBeLessThan(45);
   });
 });

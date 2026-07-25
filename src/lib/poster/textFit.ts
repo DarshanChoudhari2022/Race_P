@@ -1,6 +1,8 @@
-export function fitHorseNameFontSize(name: string, targetPt: number, maxChars = 18): number {
+export function fitHorseNameFontSize(name: string, targetPt: number, maxChars?: number): number {
   const trimmed = name.trim();
-  if (trimmed.length <= maxChars) return targetPt;
-  const over = trimmed.length - maxChars;
-  return Math.max(targetPt - over * 1.0, targetPt * 0.75, 28);
+  const limit = maxChars ?? Math.max(10, Math.floor(580 / (targetPt * 0.68)));
+  if (trimmed.length <= limit) return targetPt;
+  const over = trimmed.length - limit;
+  return Math.max(targetPt - over * 1.2, targetPt * 0.7, 26);
 }
+
