@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { ordinal } from "@/lib/utils/ordinal";
 import { formatRaceDate } from "@/lib/utils/date";
 import { formatRaceTime } from "@/lib/utils/time";
+import { titleKeepInitials } from "@/lib/utils/text";
 import { fitHorseNameFontSize } from "@/lib/poster/textFit";
 import { calculatePosterLayout } from "@/lib/poster/layoutCalculator";
 
@@ -18,6 +19,16 @@ describe("race utility formatting", () => {
 
   it("generates ordinal suffixes", () => {
     expect([1, 2, 3, 4, 11, 12, 13, 21].map(ordinal)).toEqual(["1st", "2nd", "3rd", "4th", "11th", "12th", "13th", "21st"]);
+  });
+
+  it("formats trainer and jockey names correctly", () => {
+    expect(titleKeepInitials("FARAZ ARSHAD")).toBe("Faraz Arshad");
+    expect(titleKeepInitials("MD SAJID QURESHI")).toBe("Md Sajid Qureshi");
+    expect(titleKeepInitials("JAMES MCKEOWN")).toBe("James Mckeown");
+    expect(titleKeepInitials("S S ATTAOLLAHI")).toBe("S S Attaollahi");
+    expect(titleKeepInitials("IRFAN GHATALA")).toBe("Irfan Ghatala");
+    expect(titleKeepInitials("IMTIAZ KHAN")).toBe("Imtiaz Khan");
+    expect(titleKeepInitials("ARJUN MANGALORKAR")).toBe("Arjun Mangalorkar");
   });
 });
 

@@ -10,7 +10,8 @@ export function titleKeepInitials(value: string): string {
     .split(" ")
     .map((part) => {
       if (/^[A-Z]$/.test(part)) return part;
-      if (/^[A-Z]{2,}$/.test(part)) return part;
+      if (/^Md\.?$/i.test(part)) return "Md";
+      if (/^[A-Z]{2,3}$/.test(part)) return part;
       return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
     })
     .join(" ");

@@ -156,11 +156,12 @@ function collectRunnerLine(runner: PendingRunner, line: PdfLine): void {
   const draw = line.words.find((word) => word.x0 >= 20 && word.x1 <= 60 && /^\((\d{1,2})\)$/.test(word.text));
   if (draw) runner.drawNumber = Number(draw.text.replace(/\D/g, ""));
 
-  const trainerWords = line.words.filter((word) => word.x0 >= 320 && word.x0 < 390 && isNameToken(word));
+  // Trainer column starts at x0 >= 330 (x0 < 330 is the Owner / Equipment column)
+  const trainerWords = line.words.filter((word) => word.x0 >= 330 && word.x0 < 390 && isNameToken(word));
   const jockeyWords = line.words.filter((word) => word.x0 >= 390 && word.x0 < 450 && isNameToken(word));
 
-  runner.trainerParts.push(...trainerWords.map((word) => word.text));
-  runner.jockeyParts.push(...jockeyWords.map((word) => word.text));
+  runner.trainerParts.push(...filterLoneSingleLetters(trainerWords).map((word) => word.text));
+  runner.jockeyParts.push(...filterLoneSingleLetters(jockeyWords).map((word) => word.text));
 }
 
 function isPageChrome(line: PdfLine): boolean {
@@ -176,8 +177,22 @@ function isHorseDescriptor(text: string): boolean {
 
 function isNameToken(word: PdfWord): boolean {
   if (!/^[A-Za-z'.-]+$/.test(word.text)) return false;
-  if (/^(A|S|TS|BLK|CNB|HOOD|SSCP|Last|runs|Mr|Mrs|Ms|Dr|rep)$/i.test(word.text)) return /^[A-Z]$/.test(word.text);
+  if (/^(A|S|TS|BLK|CNB|HOOD|SSCP|Last|runs|Mr|Mrs|Ms|Dr|rep|Pvt|Ltd|LLP|Co)$/i.test(word.text)) return /^[A-Z]$/.test(word.text);
   return true;
+}
+
+/**
+ * If the only name tokens on a line in a given zone are single uppercase
+ * letters (e.g. "B", "V"), they are equipment/accessory codes, not initials.
+ * Initials always appear together with at least one multi-character name on
+ * the same line.
+ */
+function filterLoneSingleLetters(words: PdfWord[]): PdfWord[] {
+  if (words.length === 0) return words;
+  const hasMultiChar = words.some((w) => w.text.length > 1);
+  if (hasMultiChar) return words;
+  // All words are single characters — treat them as equipment codes
+  return [];
 }
 
 function validateRunner(runner: Runner): string[] {
