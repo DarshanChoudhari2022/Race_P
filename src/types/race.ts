@@ -10,6 +10,7 @@ export interface Runner {
   horseFontSize?: number;
   trainerFontSize?: number;
   jockeyFontSize?: number;
+  drawFontSize?: number;
   confidence?: Confidence;
   warnings?: string[];
 }

@@ -6,6 +6,11 @@ export const runnerSchema = z.object({
   horseName: z.string().min(1),
   trainer: z.string().min(1),
   jockey: z.string().min(1),
+  numberFontSize: z.number().optional(),
+  horseFontSize: z.number().optional(),
+  trainerFontSize: z.number().optional(),
+  jockeyFontSize: z.number().optional(),
+  drawFontSize: z.number().optional(),
   confidence: z.enum(["high", "medium", "needs_review"]).optional(),
   warnings: z.array(z.string()).optional(),
 });

@@ -503,6 +503,7 @@ function renderRacePosterHtml(race: Race): string {
       const numberFont = runner.numberFontSize ?? horseFont;
       const trainerFont = runner.trainerFontSize ?? layout.detailFontPt;
       const jockeyFont = runner.jockeyFontSize ?? layout.detailFontPt;
+      const drawFont = runner.drawFontSize ?? layout.detailFontPt;
       return `<div class="poster-runner" style="top:${index * layout.runnerHeightMm}mm;height:${layout.runnerHeightMm}mm">
         <div class="runner-main">
           <span class="runner-number" style="font-size:${numberFont}pt">${runner.horseNumber}</span>
@@ -510,7 +511,7 @@ function renderRacePosterHtml(race: Race): string {
         </div>
         <div class="runner-detail" style="font-size:${layout.detailFontPt}pt">
           <span class="runner-trainer" style="font-size:${trainerFont}pt">${escapeHtml(runner.trainer)}</span>
-          <span class="runner-jockey" style="font-size:${jockeyFont}pt">${escapeHtml(runner.jockey)} <span class="runner-draw">(${runner.drawNumber ?? "?"})</span></span>
+          <span class="runner-jockey" style="font-size:${jockeyFont}pt">${escapeHtml(runner.jockey)} <span class="runner-draw" style="font-size:${drawFont}pt">(${runner.drawNumber ?? "?"})</span></span>
         </div>
       </div>`;
     })

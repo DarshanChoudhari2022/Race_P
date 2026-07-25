@@ -36,6 +36,7 @@ export function RacePoster({
           const numberFont = runner.numberFontSize ?? horseFont;
           const trainerFont = runner.trainerFontSize ?? layout.detailFontPt;
           const jockeyFont = runner.jockeyFontSize ?? layout.detailFontPt;
+          const drawFont = runner.drawFontSize ?? layout.detailFontPt;
           return (
             <div
               className="poster-runner"
@@ -56,7 +57,7 @@ export function RacePoster({
               <div className="runner-detail" style={{ fontSize: `${layout.detailFontPt}pt` }}>
                 <span className="runner-trainer" style={{ fontSize: `${trainerFont}pt` }}>{runner.trainer}</span>
                 <span className="runner-jockey" style={{ fontSize: `${jockeyFont}pt` }}>
-                  {runner.jockey} <span className="runner-draw">({runner.drawNumber ?? "?"})</span>
+                  {runner.jockey} <span className="runner-draw" style={{ fontSize: `${drawFont}pt` }}>({runner.drawNumber ?? "?"})</span>
                 </span>
               </div>
             </div>

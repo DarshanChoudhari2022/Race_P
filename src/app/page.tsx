@@ -85,7 +85,7 @@ export default function Home() {
 
   function updateRunnerSize(
     index: number,
-    field: "numberFontSize" | "horseFontSize" | "trainerFontSize" | "jockeyFontSize",
+    field: "numberFontSize" | "horseFontSize" | "trainerFontSize" | "jockeyFontSize" | "drawFontSize",
     newSize: number,
   ) {
     if (!race) return;
@@ -95,7 +95,7 @@ export default function Home() {
   }
 
   function updateAllRunnersSize(
-    field: "numberFontSize" | "horseFontSize" | "trainerFontSize" | "jockeyFontSize",
+    field: "numberFontSize" | "horseFontSize" | "trainerFontSize" | "jockeyFontSize" | "drawFontSize",
     newSize: number,
   ) {
     if (!race) return;
@@ -159,6 +159,7 @@ export default function Home() {
   const globalHorseSize = race?.runners[0]?.horseFontSize ?? layout?.horseFontPt ?? 56;
   const globalTrainerSize = race?.runners[0]?.trainerFontSize ?? layout?.detailFontPt ?? 26;
   const globalJockeySize = race?.runners[0]?.jockeyFontSize ?? layout?.detailFontPt ?? 26;
+  const globalDrawSize = race?.runners[0]?.drawFontSize ?? layout?.detailFontPt ?? 26;
 
   return (
     <main className="app-shell">
@@ -277,6 +278,11 @@ export default function Home() {
                     sizeValue={globalJockeySize}
                     onSizeChange={(val) => updateAllRunnersSize("jockeyFontSize", val)}
                   />
+                  <GlobalSizePill
+                    label="All Draws"
+                    sizeValue={globalDrawSize}
+                    onSizeChange={(val) => updateAllRunnersSize("drawFontSize", val)}
+                  />
                 </div>
               </div>
 
@@ -291,7 +297,7 @@ export default function Home() {
                   <div>Horse Name & Size</div>
                   <div>Trainer & Size</div>
                   <div>Jockey & Size</div>
-                  <div>Draw</div>
+                  <div>Draw & Size</div>
                   <div>Action</div>
                 </div>
                 {race.runners.map((runner, index) => (
@@ -481,7 +487,7 @@ function Row({
   updateRunner: (index: number, field: keyof Race["runners"][number], value: string) => void;
   updateRunnerSize: (
     index: number,
-    field: "numberFontSize" | "horseFontSize" | "trainerFontSize" | "jockeyFontSize",
+    field: "numberFontSize" | "horseFontSize" | "trainerFontSize" | "jockeyFontSize" | "drawFontSize",
     newSize: number,
   ) => void;
   deleteRunner: (index: number) => void;
@@ -491,6 +497,7 @@ function Row({
   const numberSize = runner.numberFontSize ?? horseSize;
   const trainerSize = runner.trainerFontSize ?? layout.detailFontPt;
   const jockeySize = runner.jockeyFontSize ?? layout.detailFontPt;
+  const drawSize = runner.drawFontSize ?? layout.detailFontPt;
 
   return (
     <div className="runner-row-item">
@@ -551,7 +558,25 @@ function Row({
 
       <div className="runner-cell-draw">
         <span className="mobile-label">Draw</span>
-        <input value={runner.drawNumber ?? ""} placeholder="Draw" onChange={(event) => updateRunner(index, "drawNumber", event.target.value)} />
+        <input
+          value={runner.drawNumber ?? ""}
+          placeholder="Draw"
+          onChange={(event) => updateRunner(index, "drawNumber", event.target.value)}
+        />
+        <div className="size-control-pill mini" title="Draw font size">
+          <button type="button" className="size-btn" onClick={() => updateRunnerSize(index, "drawFontSize", drawSize - 1)}>-</button>
+          <input
+            type="number"
+            className="size-num-input"
+            value={Math.round(drawSize)}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              if (!isNaN(val) && val > 0) updateRunnerSize(index, "drawFontSize", val);
+            }}
+          />
+          <span className="size-unit">pt</span>
+          <button type="button" className="size-btn" onClick={() => updateRunnerSize(index, "drawFontSize", drawSize + 1)}>+</button>
+        </div>
       </div>
 
       <div className="runner-cell-delete">
@@ -675,14 +700,14 @@ input { width: 100%; border: 1px solid #c9d1dc; border-radius: 6px; padding: 8px
 h2 { margin: 0; font-size: 18px; }
 .runner-table { display: flex; flex-direction: column; gap: 6px; }
 .runner-head {
-  display: grid; grid-template-columns: 80px 1.4fr 1fr 1fr 54px 64px; gap: 8px;
+  display: grid; grid-template-columns: 80px 1.4fr 1fr 1fr 80px 64px; gap: 8px;
   color: #526070; font-size: 12px; font-weight: 700; padding-bottom: 6px; border-bottom: 2px solid #e2e8f0;
 }
 .danger { color: #8E141B; }
 
 /* Editable Sized Input Component */
 .sized-input-group { display: flex; flex-direction: column; gap: 4px; width: 100%; }
-.runner-cell-num { display: flex; flex-direction: column; gap: 4px; }
+.runner-cell-num, .runner-cell-draw { display: flex; flex-direction: column; gap: 4px; }
 .size-control-pill {
   display: inline-flex; align-items: center; gap: 2px;
   background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 4px;
@@ -705,7 +730,7 @@ h2 { margin: 0; font-size: 18px; }
 .size-unit { font-size: 10px; font-weight: 600; color: #64748b; padding-right: 2px; }
 
 .runner-row-item {
-  display: grid; grid-template-columns: 80px 1.4fr 1fr 1fr 54px 64px; gap: 8px; align-items: start;
+  display: grid; grid-template-columns: 80px 1.4fr 1fr 1fr 80px 64px; gap: 8px; align-items: start;
   padding: 8px 0; border-bottom: 1px solid #e2e8f0;
 }
 .runner-row-item:last-child { border-bottom: none; }
