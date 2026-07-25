@@ -83,7 +83,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   column-gap: 3.5mm;
-  align-items: flex-start;
+  align-items: center;
   overflow: visible;
 }
 .runner-number {
@@ -95,9 +95,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   color: #09229d;
   font-weight: 800;
   line-height: .92;
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
   letter-spacing: 0;
 }
 .runner-detail {
