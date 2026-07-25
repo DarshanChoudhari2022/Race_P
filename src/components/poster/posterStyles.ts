@@ -33,33 +33,33 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 }
 .poster-header {
   position: absolute;
-  top: 30mm;
+  top: 18mm;
   left: 0;
   width: 100%;
   text-align: center;
   color: #121315;
 }
 .poster-date {
-  font-size: 18pt;
+  font-size: 20pt;
   line-height: 1;
   font-weight: 800;
   color: #121315;
 }
 .poster-venue {
-  margin-top: 3mm;
-  font-size: 32pt;
+  margin-top: 2.5mm;
+  font-size: 34pt;
   line-height: 1;
   font-weight: 800;
   letter-spacing: 0;
   color: #121315;
 }
 .poster-race-line {
-  margin-top: 6mm;
+  margin-top: 3.5mm;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0;
-  font-size: 32pt;
+  font-size: 34pt;
   line-height: 1;
   font-weight: 800;
   color: #121315;
@@ -67,7 +67,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 .poster-bracket {
   font-size: 48pt;
   line-height: .8;
-  padding: 0 1mm;
+  padding: 0 0.5mm;
 }
 .poster-runners {
   position: absolute;
@@ -81,7 +81,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 }
 .runner-main {
   display: grid;
-  grid-template-columns: minmax(18mm, max-content) minmax(0, 1fr);
+  grid-template-columns: max-content minmax(0, 1fr);
   column-gap: 3.5mm;
   align-items: center;
   overflow: visible;
@@ -102,7 +102,7 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   align-items: start;
-  padding-left: 21.5mm;
+  padding-left: 15.5mm;
   font-weight: 800;
   line-height: 1.05;
   margin-top: 1mm;
