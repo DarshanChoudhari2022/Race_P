@@ -166,7 +166,7 @@ function renderRacePosterHtml(race: Race): string {
       const horseFont = fitHorseNameFontSize(runner.horseName, layout.horseFontPt);
       return `<div class="poster-runner" style="top:${index * layout.runnerHeightMm}mm;height:${layout.runnerHeightMm}mm">
         <div class="runner-main">
-          <span class="runner-number" style="font-size:${layout.numberFontPt}pt">${runner.horseNumber}</span>
+          <span class="runner-number" style="font-size:${horseFont}pt">${runner.horseNumber}</span>
           <span class="runner-name" style="font-size:${horseFont}pt">${escapeHtml(runner.horseName)}</span>
         </div>
         <div class="runner-detail" style="font-size:${layout.detailFontPt}pt">

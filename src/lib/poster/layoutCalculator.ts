@@ -26,6 +26,6 @@ export function calculatePosterLayout(runnerCount: number): PosterLayout {
     footerTopMm,
     horseFontPt,
     detailFontPt: Math.max(19.5, horseFontPt * 0.46),
-    numberFontPt: Math.max(horseFontPt, 62),
+    numberFontPt: horseFontPt,
   };
 }

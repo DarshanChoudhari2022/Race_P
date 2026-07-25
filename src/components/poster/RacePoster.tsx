@@ -43,7 +43,7 @@ export function RacePoster({
               }}
             >
               <div className="runner-main">
-                <span className="runner-number" style={{ fontSize: `${layout.numberFontPt}pt` }}>
+                <span className="runner-number" style={{ fontSize: `${horseFont}pt` }}>
                   {runner.horseNumber}
                 </span>
                 <span className="runner-name" style={{ fontSize: `${horseFont}pt` }}>

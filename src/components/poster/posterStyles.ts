@@ -82,13 +82,13 @@ body { margin: 0; background: #fff; font-family: "Poppins", sans-serif; }
 .runner-main {
   display: grid;
   grid-template-columns: 18mm minmax(0, 1fr);
-  align-items: baseline;
+  align-items: center;
   overflow: visible;
 }
 .runner-number {
   color: #ff0000;
   font-weight: 800;
-  line-height: .9;
+  line-height: .92;
 }
 .runner-name {
   color: #09229d;
