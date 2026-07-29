@@ -45,4 +45,12 @@ describe("poster layout", () => {
     expect(fitHorseNameFontSize("PROMISEOFTHEFUTURE", 56)).toBeLessThan(56);
     expect(fitHorseNameFontSize("SKY FULL OF STARS FOREVER", 45)).toBeLessThan(45);
   });
+
+  it("formats draw number brackets correctly", () => {
+    const formatDraw = (draw: number | null | undefined) => (draw ? draw : "");
+    expect(formatDraw(5)).toBe(5);
+    expect(formatDraw(0)).toBe("");
+    expect(formatDraw(null)).toBe("");
+    expect(formatDraw(undefined)).toBe("");
+  });
 });

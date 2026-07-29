@@ -76,7 +76,12 @@ export default function Home() {
       runnerIndex === index
         ? {
             ...runner,
-            [field]: field === "horseNumber" || field === "drawNumber" ? Number(value) : value,
+            [field]:
+              field === "horseNumber"
+                ? (value === "" ? 0 : Number(value))
+                : field === "drawNumber"
+                ? (value === "" || isNaN(Number(value)) || Number(value) === 0 ? null : Number(value))
+                : value,
           }
         : runner,
     );

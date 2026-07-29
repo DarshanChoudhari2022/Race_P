@@ -511,7 +511,7 @@ function renderRacePosterHtml(race: Race): string {
         </div>
         <div class="runner-detail" style="font-size:${layout.detailFontPt}pt">
           <span class="runner-trainer" style="font-size:${trainerFont}pt">${escapeHtml(runner.trainer)}</span>
-          <span class="runner-jockey" style="font-size:${jockeyFont}pt">${escapeHtml(runner.jockey)} <span class="runner-draw" style="font-size:${drawFont}pt">(${runner.drawNumber ?? "?"})</span></span>
+          <span class="runner-jockey" style="font-size:${jockeyFont}pt">${escapeHtml(runner.jockey)} <span class="runner-draw" style="font-size:${drawFont}pt">(${runner.drawNumber ? runner.drawNumber : ""})</span></span>
         </div>
       </div>`;
     })
